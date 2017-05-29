@@ -1,3 +1,5 @@
+# coding: utf-8
+
 """
 https://www.shiyanlou.com/courses/777/labs/2621/document
 """
@@ -42,7 +44,7 @@ def classify0(inX, dataSet, labels, k):
 
     # 矩阵运算，计算测试数据与（每个）样本数据对应数据项的差值
     diffMat = tile(inX, (dataSetSize, 1)) - dataSet
-    print(diffMat)
+    # print(diffMat)
 
     # sqDistances 上一步骤结果平方和
     sqDiffMat = diffMat ** 2
