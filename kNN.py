@@ -57,7 +57,7 @@ def classify0(inX, dataSet, labels, k):
     sortedDistIndicies = distances.argsort()
     classCount = {}
 
-    # 依次取出最近的样本数据
+    # 取出最相近的k个数据
     for i in range(k):
         # 记录该样本数据所属的类别
         voteIlabel = labels[sortedDistIndicies[i]]
