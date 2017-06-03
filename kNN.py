@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 """
 https://www.shiyanlou.com/courses/777/labs/2621/document

@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 import operator
 from os import listdir
@@ -54,22 +54,24 @@ def classify(training_matrix, test_matrix, k):
     training_matrix_lines = training_matrix.shape[0]  # 训练矩阵的总行数，也就是训练文件数
     test_matrix = tile(test_matrix, (training_matrix_lines, 1))  # 对测试矩阵进行行复制，使其行数和训练矩阵行数一样多
     distances = (((test_matrix - training_matrix) ** 2).sum(axis=1)) ** 0.5  # 获取测试数据和所有的训练数据的差异值list
-    sortedDistances = distances.argsort()  # 对差异值按从小到大进行排序
+    sorted_distances_index = distances.argsort()  # 对差异值按从小到大进行排序，把排序前list的下标作为新list的值组成一个列表
 
-    classCount = {}
+    num_count = {}  # 记录某个数字的出现次数
 
     for i in range(k):
-        voteIlabel = TRAINING_REAL_NUMS[sortedDistances[i]]
-        classCount[voteIlabel] = classCount.get(voteIlabel, 0) + 1
+        # 根据下标获取到训练数据中该条数据所对应的真实数字（至于最终选不选该数字依赖于其出现的频率）
+        one_possible_number = TRAINING_REAL_NUMS[sorted_distances_index[i]]
+        # 先获取该数字当前的出现次数（没有就为0），之后把当前次数加一作为新的出现次数
+        num_count[one_possible_number] = num_count.get(one_possible_number, 0) + 1
 
-    # 对类别出现的频次进行排序，从高到低
-    sortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
+    # 对数字出现的频次进行排序，从高到低
+    sorted_num_count = sorted(num_count.items(), key=operator.itemgetter(1), reverse=True)
 
-    # 返回出现频次最高的类别
-    return sortedClassCount[0][0]
+    # 返回出现频次最高的数字
+    return sorted_num_count[0][0]
 
 
-def main():
+def run():
     training_matrix = generate_training_matrix()
     test_matrix_list = generate_test_matrix_list()
     right = 0  # 正确的个数
@@ -87,4 +89,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    run()
