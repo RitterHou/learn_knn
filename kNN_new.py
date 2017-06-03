@@ -82,10 +82,10 @@ def run():
         if real == guess:
             right += 1
         total += 1
-        print('真实：', real, '，猜测：', guess)
+        print('real: ', real, ', guess: ', guess)
 
     fail = total - right
-    print(fail, '次失败，失败率', fail / total)
+    print(fail, ' fails, fail rate is ', fail / total)
 
 
 if __name__ == '__main__':
