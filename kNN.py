@@ -1,129 +1,103 @@
 # -*- coding: utf-8 -*-
 
-"""
-https://www.shiyanlou.com/courses/777/labs/2621/document
-"""
-
 import operator
 from os import listdir
 
-from numpy import tile, zeros
+from numpy import zeros, tile
+
+TRAINING_PATH = 'digits/trainingDigits/'
+TRAINING_REAL_NUMS = []
+TEST_PATH = 'digits/testDigits/'
+TEST_REAL_NUMS = []
 
 
-# 读取数据到矩阵
-def img2vector(filename):
-    # 创建1行1024列的向量
-    returnVect = zeros((1, 1024))
-
-    # 打开数据文件，读取每行内容
-    fr = open(filename)
-
-    for i in range(32):
-        # 读取每一行
-        lineStr = fr.readline()
-
-        # 将每行前32字符转成int存入向量
-        for j in range(32):
-            returnVect[0, 32 * i + j] = int(lineStr[j])
-
-    return returnVect
-
-
-# kNN算法实现
-def classify0(inX, dataSet, labels, k):
+def _make_matrix_by_file(file):
     """
-    训练
-    :param inX: 测试向量（只有一个）
-    :param dataSet: 训练向量
-    :param labels: 训练样本中的正确数据
-    :param k: 3
+    把指定文件内的数据生成一个一维矩阵
+    :param file:
     :return:
     """
-    # 获取训练样本数据数量（获取向量的行数）
-    dataSetSize = dataSet.shape[0]
+    file_data_array = zeros((1, 1024))  # 创建一个只有一行且存储文件所有数据的矩阵
+    with open(file) as lines:
+        # 把文件的所有数据存储在矩阵中
+        for line_num, line in enumerate(lines):
+            for i in range(32):
+                file_data_array[0, 32 * line_num + i] = int(line[i])
+    return file_data_array
 
-    # 矩阵运算，计算测试数据与（每个）样本数据对应数据项的差值
-    diffMat = tile(inX, (dataSetSize, 1)) - dataSet
-    # print(diffMat)
 
-    # sqDistances 上一步骤结果平方和
-    sqDiffMat = diffMat ** 2
-    sqDistances = sqDiffMat.sum(axis=1)
+def generate_training_matrix():
+    """
+    读取所有训练文件的数据并且转化为一个矩阵
+    :return:
+    """
+    training_file_list = listdir(TRAINING_PATH)  # 获取训练文件列表
+    training_matrix = zeros((len(training_file_list), 1024))  # 创建一个矩阵，行数为训练文件数，列数为每个训练文件的字符数
+    for file_index, training_file in enumerate(training_file_list):
+        TRAINING_REAL_NUMS.append(training_file.split('.')[0].split('_')[0])  # 把正确的数字保存在列表中
+        # 把所有的训练文件数据存储在一个矩阵中
+        training_matrix[file_index, :] = _make_matrix_by_file(TRAINING_PATH + training_file)
+    return training_matrix
 
-    # 取平方根，得到距离向量
-    distances = sqDistances ** 0.5
 
-    # 按照距离从低到高排序
-    sortedDistIndicies = distances.argsort()
-    classCount = {}
+def generate_test_matrix_list():
+    """
+    读取所有测试文件的数据并且转化为一个矩阵list
+    :return:
+    """
+    test_file_list = listdir(TEST_PATH)  # 获取测试文件列表
+    test_matrix1_list = []
+    for test_file in test_file_list:
+        TEST_REAL_NUMS.append(test_file.split('.')[0].split('_')[0])
+        # 把所有的测试文件矩阵保存为一个list
+        test_matrix1_list.append(_make_matrix_by_file(TEST_PATH + test_file))
+    return test_matrix1_list
 
-    # 取出最相近的k个数据
+
+def classify(training_matrix, test_matrix, k=3):
+    """
+    通过训练矩阵对测试数据进行数字判断
+    :param training_matrix: 完整的训练矩阵
+    :param test_matrix: 测试数据
+    :param k: 取最相似的k个训练数据
+    :return: 分类结果
+    """
+    training_matrix_lines = training_matrix.shape[0]  # 训练矩阵的总行数，也就是训练文件数
+    test_matrix = tile(test_matrix, (training_matrix_lines, 1))  # 对测试矩阵进行行复制，使其行数和训练矩阵行数一样多
+    distances = (((test_matrix - training_matrix) ** 2).sum(axis=1)) ** 0.5  # 获取测试数据和所有的训练数据的差异值list
+    sorted_distances_index = distances.argsort()  # 对差异值按从小到大进行排序，把排序前list的下标作为新list的值组成一个列表
+
+    num_count = {}  # 记录某个数字的出现次数
+
     for i in range(k):
-        # 记录该样本数据所属的类别
-        voteIlabel = labels[sortedDistIndicies[i]]
-        classCount[voteIlabel] = classCount.get(voteIlabel, 0) + 1
+        # 根据下标获取到训练数据中该条数据所对应的真实数字（至于最终选不选该数字依赖于其出现的频率）
+        one_possible_number = TRAINING_REAL_NUMS[sorted_distances_index[i]]
+        # 先获取该数字当前的出现次数（没有就为0），之后把当前次数加一作为新的出现次数
+        num_count[one_possible_number] = num_count.get(one_possible_number, 0) + 1
 
-    # 对类别出现的频次进行排序，从高到低
-    sortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
+    # 对数字出现的频次进行排序，从高到低
+    sorted_num_count = sorted(num_count.items(), key=operator.itemgetter(1), reverse=True)
 
-    # 返回出现频次最高的类别
-    return sortedClassCount[0][0]
-
-
-# 算法测试
-def handwritingClassTest():
-    # 样本数据的类标签列表
-    hwLabels = []
-
-    # 训练样本数据文件列表
-    trainingFileList = listdir('digits/trainingDigits')
-    m = len(trainingFileList)
-
-    # 初始化样本数据矩阵（M*1024）
-    trainingMat = zeros((m, 1024))
-
-    # 依次读取所有样本数据到数据矩阵
-    for i in range(m):
-        # 提取文件名中的数字
-        fileNameStr = trainingFileList[i]
-        fileStr = fileNameStr.split('.')[0]
-        classNumStr = int(fileStr.split('_')[0])
-        hwLabels.append(classNumStr)
-
-        # 将样本数据存入矩阵
-        trainingMat[i, :] = img2vector('digits/trainingDigits/%s' % fileNameStr)
-
-    # 循环读取测试数据
-    testFileList = listdir('digits/testDigits')
-
-    # 初始化错误率
-    errorCount = 0.0
-    mTest = len(testFileList)
-
-    # 循环测试每个测试数据文件
-    for i in range(mTest):
-        # 提取文件名中的数字
-        fileNameStr = testFileList[i]
-        fileStr = fileNameStr.split('.')[0]
-        classNumStr = int(fileStr.split('_')[0])
-
-        # 提取数据向量
-        vectorUnderTest = img2vector('digits/testDigits/%s' % fileNameStr)
-
-        # 对数据文件进行分类
-        classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 3)
-
-        # 打印KNN算法分类结果和真实的分类
-        print("the classifier came back with: %d, the real answer is: %d" % (classifierResult, classNumStr))
-
-        # 判断KNN算法结果是否准确
-        if classifierResult != classNumStr:
-            errorCount += 1.0
-
-    # 打印错误率
-    print("\nthe total number of errors is: %d" % errorCount)
-    print("\nthe total error rate is: %f" % (errorCount / float(mTest)))
+    # 返回出现频次最高的数字
+    return sorted_num_count[0][0]
 
 
-# 执行算法测试
-handwritingClassTest()
+def run():
+    training_matrix = generate_training_matrix()
+    test_matrix_list = generate_test_matrix_list()
+    right = 0  # 正确的个数
+    total = 0  # 总个数
+    for idx, test_matrix in enumerate(test_matrix_list):
+        real = TEST_REAL_NUMS[idx]
+        guess = classify(training_matrix, test_matrix, 3)
+        if real == guess:
+            right += 1
+        total += 1
+        print('real: ', real, ', guess: ', guess)
+
+    fail = total - right
+    print(fail, ' fails, fail rate is ', fail / total)
+
+
+if __name__ == '__main__':
+    run()
