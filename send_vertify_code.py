@@ -1,12 +1,10 @@
-import json
-
 import requests
 
 from image.images import get_verification_value
 from image.kNN import test_num
 from image.kNN_symbol import test_symbol
 
-cookie = 'isGuifan=1; PHPSESSID=4f3giot5mquu68qb5rbgopp2d3'
+cookie = 'isGuifan=1; PHPSESSID=jih9d458bj4h2767q38p3bdop2'
 
 # 通过HTTP请求获取验证码信息
 value = get_verification_value(cookie)
@@ -34,9 +32,9 @@ headers = {
         'Cookie': cookie
     }
 data = {
-    'mobile': 13333333333,
+    'mobile': 15195935889,
     'vcode': result
 }
 r = requests.post(url, headers=headers, data=data)
-print(r.content)
+print(r.content.decode('gbk'))
 
