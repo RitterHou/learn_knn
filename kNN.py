@@ -6,9 +6,9 @@ from os import listdir
 from numpy import zeros, tile
 
 TRAINING_PATH = 'digits/trainingDigits/'
-TRAINING_REAL_NUMS = []
+TRAINING_REAL_NUMS = []  # 训练数据的真实数字
 TEST_PATH = 'digits/testDigits/'
-TEST_REAL_NUMS = []
+TEST_REAL_NUMS = []  # 测试数据的真实数字
 
 
 def _make_matrix_by_file(file):
