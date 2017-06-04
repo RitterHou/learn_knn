@@ -6,7 +6,7 @@ from image.images import get_verification_value
 from image.kNN import test_num
 from image.kNN_symbol import test_symbol
 
-cookie = 'isGuifan=1; PHPSESSID=tc0opahf9q6i520b564o43p1r1'
+cookie = 'isGuifan=1; PHPSESSID=4f3giot5mquu68qb5rbgopp2d3'
 
 # 通过HTTP请求获取验证码信息
 value = get_verification_value(cookie)
