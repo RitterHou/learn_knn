@@ -6,9 +6,9 @@ from os import *
 from PIL import Image
 from numpy import zeros, tile, array
 
-TRAINING_PATH = 'train_num/'
+TRAINING_PATH = 'train_symbol/'
 TRAINING_REAL_NUMS = []  # 训练数据的真实数字
-TEST_PATH = 'num/'
+TEST_PATH = 'symbol/'
 TEST_REAL_NUMS = []  # 测试数据的真实数字
 
 
@@ -18,12 +18,12 @@ def _make_matrix_by_file(file):
     :param file:
     :return:
     """
-    file_data_array = zeros((1, 120))  # 创建一个只有一行且存储文件所有数据的矩阵
+    file_data_array = zeros((1, 90))  # 创建一个只有一行且存储文件所有数据的矩阵
     matrix = array(Image.open(file))
     # print(matrix.tolist())
     for i in range(10):
-        for j in range(12):
-            file_data_array[0, i * 10 + j] = 0 if matrix[j][i] else 1
+        for j in range(9):
+            file_data_array[0, i * 9 + j] = 0 if matrix[j][i] else 1
     # print(file_data_array.tolist())
     return file_data_array
 
@@ -34,7 +34,7 @@ def generate_training_matrix():
     :return:
     """
     training_file_list = listdir(TRAINING_PATH)  # 获取训练文件列表
-    training_matrix = zeros((len(training_file_list), 120))  # 创建一个矩阵，行数为训练文件数，列数为每个训练文件的字符数
+    training_matrix = zeros((len(training_file_list), 90))  # 创建一个矩阵，行数为训练文件数，列数为每个训练文件的字符数
     for file_index, training_file in enumerate(training_file_list):
         TRAINING_REAL_NUMS.append(training_file.split('.')[0].split('_')[0])  # 把正确的数字保存在列表中
         # 把所有的训练文件数据存储在一个矩阵中
@@ -84,14 +84,14 @@ def classify(training_matrix, test_matrix, k=3):
     return sorted_num_count[0][0]
 
 
-def test_num(test_file):
+def test_symbol(test_file):
     training_matrix = generate_training_matrix()
 
-    file_data_array = zeros((1, 120))  # 创建一个只有一行且存储文件所有数据的矩阵
+    file_data_array = zeros((1, 90))  # 创建一个只有一行且存储文件所有数据的矩阵
     test_matrix = array(test_file)
     for i in range(10):
-        for j in range(12):
-            file_data_array[0, i * 10 + j] = 0 if test_matrix[j][i] else 1
+        for j in range(9):
+            file_data_array[0, i * 9 + j] = 0 if test_matrix[j][i] else 1
     guess = classify(training_matrix, file_data_array, 3)
     return guess
 
